@@ -201,18 +201,14 @@
             display: none;
         }
 
-        #clear-storage, #generate-txt {
+        #clear-storage {
             margin-top: 10px;
             padding: 8px;
-            background: #2a5298;
+            background: #c62828;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-        }
-
-        #clear-storage {
-            background: #c62828;
         }
 
         @media (max-width: 600px) {
@@ -300,7 +296,6 @@
             <div id="trainings"></div>
             <div id="debug-message"></div>
             <button id="clear-storage" onclick="clearStorage()">Limpar Dados Salvos</button>
-            <button id="generate-txt" onclick="generateTxt()">Gerar Arquivo .txt</button>
         </div>
     </div>
 
@@ -328,66 +323,6 @@
             } catch (error) {
                 console.error('Erro ao limpar dados:', error);
                 showDebugMessage('Erro ao limpar dados: ' + error.message);
-            }
-        }
-
-        // Função para gerar arquivo .txt
-        function generateTxt() {
-            try {
-                let schedules = getSchedules();
-                let textContent = '';
-                let hasData = false;
-                const maxWidth = 50; // Largura máxima do quadrado (ajustável)
-
-                // Função para criar linha de borda
-                const createBorder = () => '*'.repeat(maxWidth) + '\n';
-
-                // Função para formatar linha com padding
-                const formatLine = (label, value) => {
-                    const formattedValue = `_**${value}**_`; // Itálico e negrito
-                    const line = `${label} ${formattedValue}`;
-                    const padding = ' '.repeat(maxWidth - line.length - 3);
-                    return `* ${line}${padding}*\n`;
-                };
-
-                textContent += createBorder();
-                for (const date in schedules) {
-                    if (Array.isArray(schedules[date])) {
-                        schedules[date].forEach(schedule => {
-                            hasData = true;
-                            textContent += formatLine('Aluno:', schedule.name);
-                            textContent += formatLine('Faixa/Grau:', schedule.graduation);
-                            textContent += formatLine('Data:', schedule.date);
-                            textContent += formatLine('Horário:', schedule.time);
-                            textContent += formatLine('Tipo:', schedule.type);
-                            textContent += createBorder();
-                        });
-                    }
-                }
-
-                if (!hasData) {
-                    const message = 'Nenhum treino registrado.';
-                    const padding = ' '.repeat(maxWidth - message.length - 3);
-                    textContent += `* ${message}${padding}*\n`;
-                    textContent += createBorder();
-                }
-
-                // Criar e baixar o arquivo .txt
-                const blob = new Blob([textContent], { type: 'text/plain' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'relatorio_treinos.txt';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-
-                showDebugMessage('Arquivo .txt gerado com sucesso');
-            } catch (error) {
-                console.error('Erro ao gerar arquivo .txt:', error);
-                showDebugMessage('Erro ao gerar arquivo .txt: ' + error.message);
-                alert('Erro ao gerar arquivo .txt: ' + error.message);
             }
         }
 
