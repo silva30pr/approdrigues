@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FitPlan - App de Academia</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -202,7 +201,7 @@
             display: none;
         }
 
-        #clear-storage, #generate-pdf {
+        #clear-storage, #generate-txt {
             margin-top: 10px;
             padding: 8px;
             background: #2a5298;
@@ -301,7 +300,7 @@
             <div id="trainings"></div>
             <div id="debug-message"></div>
             <button id="clear-storage" onclick="clearStorage()">Limpar Dados Salvos</button>
-            <button id="generate-pdf" onclick="generatePDF()">Gerar Arquivo PDF</button>
+            <button id="generate-txt" onclick="generateTxt()">Gerar Arquivo .txt</button>
         </div>
     </div>
 
@@ -332,56 +331,63 @@
             }
         }
 
-        // Função para gerar PDF
-        function generatePDF() {
+        // Função para gerar arquivo .txt
+        function generateTxt() {
             try {
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
                 let schedules = getSchedules();
-                let y = 20;
-
-                doc.setFontSize(16);
-                doc.text('Relatório de Treinos', 20, y);
-                y += 10;
-
-                doc.setFontSize(12);
+                let textContent = '';
                 let hasData = false;
+                const maxWidth = 50; // Largura máxima do quadrado (ajustável)
 
+                // Função para criar linha de borda
+                const createBorder = () => '*'.repeat(maxWidth) + '\n';
+
+                // Função para formatar linha com padding
+                const formatLine = (label, value) => {
+                    const formattedValue = `_**${value}**_`; // Itálico e negrito
+                    const line = `${label} ${formattedValue}`;
+                    const padding = ' '.repeat(maxWidth - line.length - 3);
+                    return `* ${line}${padding}*\n`;
+                };
+
+                textContent += createBorder();
                 for (const date in schedules) {
                     if (Array.isArray(schedules[date])) {
                         schedules[date].forEach(schedule => {
                             hasData = true;
-                            doc.text(`Aluno: ${schedule.name}`, 20, y);
-                            y += 10;
-                            doc.text(`Faixa/Grau: ${schedule.graduation}`, 20, y);
-                            y += 10;
-                            doc.text(`Data: ${schedule.date}`, 20, y);
-                            y += 10;
-                            doc.text(`Horário: ${schedule.time}`, 20, y);
-                            y += 10;
-                            doc.text(`Tipo: ${schedule.type}`, 20, y);
-                            y += 10;
-                            doc.text('------------------------', 20, y);
-                            y += 10;
-
-                            if (y > 270) {
-                                doc.addPage();
-                                y = 20;
-                            }
+                            textContent += formatLine('Aluno:', schedule.name);
+                            textContent += formatLine('Faixa/Grau:', schedule.graduation);
+                            textContent += formatLine('Data:', schedule.date);
+                            textContent += formatLine('Horário:', schedule.time);
+                            textContent += formatLine('Tipo:', schedule.type);
+                            textContent += createBorder();
                         });
                     }
                 }
 
                 if (!hasData) {
-                    doc.text('Nenhum treino registrado.', 20, y);
+                    const message = 'Nenhum treino registrado.';
+                    const padding = ' '.repeat(maxWidth - message.length - 3);
+                    textContent += `* ${message}${padding}*\n`;
+                    textContent += createBorder();
                 }
 
-                doc.save('relatorio_treinos.pdf');
-                showDebugMessage('PDF gerado com sucesso');
+                // Criar e baixar o arquivo .txt
+                const blob = new Blob([textContent], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'relatorio_treinos.txt';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                showDebugMessage('Arquivo .txt gerado com sucesso');
             } catch (error) {
-                console.error('Erro ao gerar PDF:', error);
-                showDebugMessage('Erro ao gerar PDF: ' + error.message);
-                alert('Erro ao gerar PDF: ' + error.message);
+                console.error('Erro ao gerar arquivo .txt:', error);
+                showDebugMessage('Erro ao gerar arquivo .txt: ' + error.message);
+                alert('Erro ao gerar arquivo .txt: ' + error.message);
             }
         }
 
