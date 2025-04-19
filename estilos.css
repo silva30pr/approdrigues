@@ -194,7 +194,7 @@ header .name input {
     display: none;
 }
 
-#clear-storage, #generate-pdf {
+#clear-storage, #generate-txt {
     margin-top: 10px;
     padding: 8px;
     background: #2a5298;
