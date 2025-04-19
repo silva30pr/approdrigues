@@ -1,0 +1,233 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    min-height: 100vh;
+    padding: 10px;
+}
+
+.container {
+    max-width: 100%;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: #2a5298;
+    border-radius: 10px;
+}
+
+.photo-placeholder {
+    width: 80px;
+    height: 100px;
+    background: #ddd;
+    border-radius: 5px;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.photo-placeholder img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none;
+}
+
+#photo-input {
+    display: none;
+}
+
+header .name input {
+    font-size: 1.2em;
+    color: #fff;
+    background: transparent;
+    border: 1px solid #fff;
+    border-radius: 5px;
+    padding: 5px;
+    text-align: center;
+    width: 100%;
+    max-width: 250px;
+}
+
+.graduation-input input {
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    font-size: 0.9em;
+    width: 150px;
+    text-align: center;
+}
+
+.month-selector {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.month-selector input,
+.month-selector button {
+    padding: 8px;
+    border-radius: 5px;
+    border: none;
+    font-size: 0.9em;
+    width: 100%;
+    max-width: 150px;
+}
+
+.month-selector button {
+    background: #2a5298;
+    color: white;
+    cursor: pointer;
+}
+
+.calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    background: #f9f9f9;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.day {
+    padding: 8px;
+    text-align: center;
+    background: #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+.day.selected {
+    background: #2a5298;
+    color: white;
+}
+
+.day.scheduled {
+    background: #4caf50;
+    color: white;
+}
+
+.schedule-form, .schedule-list {
+    margin-top: 15px;
+    background: #fff;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.form-group {
+    margin-bottom: 10px;
+}
+
+.form-group label {
+    font-weight: bold;
+    color: #333;
+    font-size: 0.9em;
+}
+
+.form-group input, .form-group select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 0.9em;
+}
+
+.digital-clock {
+    font-size: 0.9em;
+    color: #2a5298;
+    margin-bottom: 5px;
+    text-align: center;
+    background: #f0f0f0;
+    padding: 5px;
+    border-radius: 5px;
+}
+
+.schedule-form button {
+    width: 100%;
+    padding: 10px;
+    background: #2a5298;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 0.9em;
+    cursor: pointer;
+}
+
+.schedule-list {
+    font-size: 0.9em;
+}
+
+.schedule-list h3 {
+    margin-bottom: 10px;
+}
+
+.schedule-list #trainings {
+    white-space: pre-wrap;
+    background: #f9f9f9;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+#debug-message {
+    margin-top: 10px;
+    padding: 10px;
+    background: #ffebee;
+    color: #c62828;
+    border-radius: 5px;
+    display: none;
+}
+
+#clear-storage, #generate-pdf {
+    margin-top: 10px;
+    padding: 8px;
+    background: #2a5298;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#clear-storage {
+    background: #c62828;
+}
+
+@media (max-width: 600px) {
+    header {
+        flex-direction: column;
+    }
+
+    header .name input {
+        font-size: 1em;
+        max-width: 200px;
+    }
+
+    .month-selector {
+        flex-direction: column;
+    }
+
+    .calendar {
+        gap: 3px;
+    }
+
+    .day {
+        padding: 6px;
+        font-size: 0.8em;
+    }
+}
