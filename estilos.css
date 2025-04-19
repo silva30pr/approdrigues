@@ -1,229 +1,309 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+// Armazenamento em memória como fallback
+let inMemorySchedules = {};
+
+// Função para exibir mensagens de debug na interface
+function showDebugMessage(message) {
+    const debugDiv = document.getElementById('debug-message');
+    debugDiv.textContent = message;
+    debugDiv.style.display = 'block';
+    console.log('Debug:', message);
 }
 
-body {
-    font-family: Arial, sans-serif;
-    background: linear-gradient(135deg, #1e3c72, #2a5298);
-    min-height: 100vh;
-    padding: 10px;
-}
-
-.container {
-    max-width: 100%;
-    margin: 0 auto;
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 15px;
-    padding: 15px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-}
-
-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 15px;
-    padding: 10px;
-    background: #2a5298;
-    border-radius: 10px;
-}
-
-.photo-placeholder {
-    width: 80px;
-    height: 100px;
-    background: #ddd;
-    border-radius: 5px;
-    cursor: pointer;
-    overflow: hidden;
-}
-
-.photo-placeholder img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: none;
-}
-
-#photo-input {
-    display: none;
-}
-
-header .name input {
-    font-size: 1.2em;
-    color: #fff;
-    background: transparent;
-    border: 1px solid #fff;
-    border-radius: 5px;
-    padding: 5px;
-    text-align: center;
-    width: 100%;
-    max-width: 250px;
-}
-
-.graduation-input input {
-    padding: 5px;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-    font-size: 0.9em;
-    width: 150px;
-    text-align: center;
-}
-
-.month-selector {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
-    padding: 10px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-}
-
-.month-selector input,
-.month-selector button {
-    padding: 8px;
-    border-radius: 5px;
-    border: none;
-    font-size: 0.9em;
-    width: 100%;
-    max-width: 150px;
-}
-
-.month-selector button {
-    background: #2a5298;
-    color: white;
-    cursor: pointer;
-}
-
-.calendar {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 5px;
-    background: #f9f9f9;
-    padding: 10px;
-    border-radius: 10px;
-}
-
-.day {
-    padding: 8px;
-    text-align: center;
-    background: #fff;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 0.9em;
-}
-
-.day.selected {
-    background: #2a5298;
-    color: white;
-}
-
-.day.scheduled {
-    background: #4caf50;
-    color: white;
-}
-
-.schedule-form, .schedule-list {
-    margin-top: 15px;
-    background: #fff;
-    padding: 10px;
-    border-radius: 10px;
-}
-
-.form-group {
-    margin-bottom: 10px;
-}
-
-.form-group label {
-    font-weight: bold;
-    color: #333;
-    font-size: 0.9em;
-}
-
-.form-group input, .form-group select {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 0.9em;
-}
-
-.digital-clock {
-    font-size: 0.9em;
-    color: #2a5298;
-    margin-bottom: 5px;
-    text-align: center;
-    background: #f0f0f0;
-    padding: 5px;
-    border-radius: 5px;
-}
-
-.schedule-form button {
-    width: 100%;
-    padding: 10px;
-    background: #2a5298;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    font-size: 0.9em;
-    cursor: pointer;
-}
-
-.schedule-list {
-    font-size: 0.9em;
-}
-
-.schedule-list h3 {
-    margin-bottom: 10px;
-}
-
-.schedule-list #trainings {
-    white-space: pre-wrap;
-    background: #f9f9f9;
-    padding: 10px;
-    border-radius: 5px;
-}
-
-#debug-message {
-    margin-top: 10px;
-    padding: 10px;
-    background: #ffebee;
-    color: #c62828;
-    border-radius: 5px;
-    display: none;
-}
-
-#clear-storage {
-    margin-top: 10px;
-    padding: 8px;
-    background: #c62828;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-@media (max-width: 600px) {
-    header {
-        flex-direction: column;
-    }
-
-    header .name input {
-        font-size: 1em;
-        max-width: 200px;
-    }
-
-    .month-selector {
-        flex-direction: column;
-    }
-
-    .calendar {
-        gap: 3px;
-    }
-
-    .day {
-        padding: 6px;
-        font-size: 0.8em;
+// Função para limpar localStorage e inMemorySchedules
+function clearStorage() {
+    try {
+        localStorage.removeItem('schedules');
+        inMemorySchedules = {};
+        updateScheduleList();
+        generateCalendar();
+        showDebugMessage('Dados salvos limpos com sucesso');
+        alert('Dados salvos limpos com sucesso!');
+    } catch (error) {
+        console.error('Erro ao limpar dados:', error);
+        showDebugMessage('Erro ao limpar dados: ' + error.message);
     }
 }
+
+// Relógio digital
+function updateClock() {
+    const clock = document.getElementById('digital-clock');
+    const now = new Date();
+    clock.textContent = now.toLocaleTimeString('pt-BR', { hour12: false });
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// Upload de foto
+document.getElementById('photo-input').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = document.getElementById('photo');
+            img.src = e.target.result;
+            img.style.display = 'block';
+            try {
+                localStorage.setItem('photo', e.target.result);
+            } catch (error) {
+                console.error('Erro ao salvar foto no localStorage:', error);
+                showDebugMessage('Erro ao salvar foto: ' + error.message);
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// Carregar foto salva
+window.onload = function() {
+    try {
+        const savedPhoto = localStorage.getItem('photo');
+        if (savedPhoto) {
+            const img = document.getElementById('photo');
+            img.src = savedPhoto;
+            img.style.display = 'block';
+        }
+    } catch (error) {
+        console.error('Erro ao carregar foto do localStorage:', error);
+        showDebugMessage('Erro ao carregar foto: ' + error.message);
+    }
+    generateCalendar();
+    updateScheduleList();
+};
+
+// Salvar nome e graduação
+document.getElementById('student-name').addEventListener('input', function() {
+    try {
+        localStorage.setItem('student-name', this.value);
+    } catch (error) {
+        console.error('Erro ao salvar nome no localStorage:', error);
+        showDebugMessage('Erro ao salvar nome: ' + error.message);
+    }
+});
+document.getElementById('graduation').addEventListener('input', function() {
+    try {
+        localStorage.setItem('graduation', this.value);
+    } catch (error) {
+        console.error('Erro ao salvar graduação no localStorage:', error);
+        showDebugMessage('Erro ao salvar graduação: ' + error.message);
+    }
+});
+try {
+    document.getElementById('student-name').value = localStorage.getItem('student-name') || 'Marcelo dos Santos Rodrigues';
+    document.getElementById('graduation').value = localStorage.getItem('graduation') || '';
+} catch (error) {
+    console.error('Erro ao carregar nome/graduação do localStorage:', error);
+    showDebugMessage('Erro ao carregar nome/graduação: ' + error.message);
+}
+
+// Gerar calendário
+function generateCalendar() {
+    const monthInput = document.getElementById('month').value;
+    if (!monthInput) {
+        console.error('Nenhum mês selecionado');
+        showDebugMessage('Nenhum mês selecionado');
+        return;
+    }
+
+    const [year, month] = monthInput.split('-').map(Number);
+    const date = new Date(year, month - 1, 1);
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const firstDay = date.getDay();
+
+    const calendar = document.getElementById('calendar');
+    calendar.innerHTML = '';
+
+    // Adicionar dias da semana
+    const daysOfWeek = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    daysOfWeek.forEach(day => {
+        const dayElement = document.createElement('div');
+        dayElement.textContent = day;
+        dayElement.style.fontWeight = 'bold';
+        calendar.appendChild(dayElement);
+    });
+
+    // Adicionar dias vazios iniciais
+    for (let i = 0; i < firstDay; i++) {
+        calendar.appendChild(document.createElement('div'));
+    }
+
+    // Adicionar dias do mês
+    let schedules = getSchedules();
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dayElement = document.createElement('div');
+        dayElement.textContent = day;
+        dayElement.className = 'day';
+        const dateKey = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+        if (schedules[dateKey] && Array.isArray(schedules[dateKey]) && schedules[dateKey].length > 0) {
+            dayElement.classList.add('scheduled');
+        }
+        dayElement.onclick = () => selectDay(day, year, month);
+        calendar.appendChild(dayElement);
+    }
+
+    updateMonthlyCount(year, month);
+}
+
+// Selecionar dia
+function selectDay(day, year, month) {
+    const selectedDayInput = document.getElementById('selected-day');
+    const date = `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}/${year}`;
+    selectedDayInput.value = date;
+
+    document.querySelectorAll('.day').forEach(d => d.classList.remove('selected'));
+    event.target.classList.add('selected');
+    console.log('Dia selecionado:', date);
+    showDebugMessage('Dia selecionado: ' + date);
+}
+
+// Obter schedules (localStorage ou memória)
+function getSchedules() {
+    try {
+        const stored = localStorage.getItem('schedules');
+        let schedules = stored ? JSON.parse(stored) : {};
+        if (typeof schedules !== 'object' || schedules === null) {
+            console.warn('Dados corrompidos no localStorage, inicializando novo objeto');
+            showDebugMessage('Dados corrompidos, inicializando novo objeto');
+            schedules = {};
+        }
+        for (let key in schedules) {
+            if (!Array.isArray(schedules[key])) {
+                console.warn(`Chave ${key} não é um array, corrigindo`);
+                showDebugMessage(`Chave ${key} não é um array, corrigindo`);
+                schedules[key] = [];
+            }
+        }
+        return schedules;
+    } catch (error) {
+        console.error('Erro ao carregar schedules do localStorage, usando memória:', error);
+        showDebugMessage('Erro ao carregar schedules: ' + error.message);
+        return inMemorySchedules;
+    }
+}
+
+// Salvar schedules (localStorage ou memória)
+function saveSchedules(schedules) {
+    try {
+        localStorage.setItem('schedules', JSON.stringify(schedules));
+        console.log('Schedules salvos no localStorage:', schedules);
+        showDebugMessage('Schedules salvos no localStorage');
+    } catch (error) {
+        console.error('Erro ao salvar schedules no localStorage, usando memória:', error);
+        showDebugMessage('Erro ao salvar schedules: ' + error.message);
+        inMemorySchedules = schedules;
+    }
+}
+
+// Salvar treino
+function saveSchedule(type) {
+    try {
+        const selectedDay = document.getElementById('selected-day').value;
+        const time = document.getElementById('time').value;
+        const name = document.getElementById('student-name').value.trim();
+        const graduation = document.getElementById('graduation').value.trim() || 'Sem graduação';
+
+        console.log('Tentando salvar treino:', { name, graduation, selectedDay, time });
+        showDebugMessage(`Tentando salvar: Nome=${name}, Dia=${selectedDay}, Horário=${time}`);
+
+        if (!name) {
+            console.error('Nome do aluno não preenchido');
+            showDebugMessage('Erro: Nome do aluno não preenchido');
+            alert('Preencha o nome do aluno!');
+            return;
+        }
+        if (!selectedDay) {
+            console.error('Dia não selecionado');
+            showDebugMessage('Erro: Dia não selecionado');
+            alert('Selecione um dia!');
+            return;
+        }
+        if (!time) {
+            console.error('Horário não selecionado');
+            showDebugMessage('Erro: Horário não selecionado');
+            alert('Selecione um horário!');
+            return;
+        }
+
+        const [day, month, year] = selectedDay.split('/').map(Number);
+        if (!day || !month || !year) {
+            console.error('Formato de data inválido:', selectedDay);
+            showDebugMessage('Erro: Formato de data inválido');
+            alert('Formato de data inválido!');
+            return;
+        }
+
+        const dateKey = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+        let schedules = getSchedules();
+
+        if (!schedules[dateKey] || !Array.isArray(schedules[dateKey])) {
+            schedules[dateKey] = [];
+        }
+        schedules[dateKey].push({ type, time, date: selectedDay, name, graduation });
+
+        saveSchedules(schedules);
+        console.log('Treino salvo:', schedules[dateKey]);
+        showDebugMessage('Treino salvo com sucesso');
+
+        updateScheduleList();
+        generateCalendar();
+        alert('Treino salvo com sucesso!');
+    } catch (error) {
+        console.error('Erro em saveSchedule:', error);
+        showDebugMessage('Erro ao salvar treino: ' + error.message);
+        alert('Erro ao salvar treino: ' + error.message);
+    }
+}
+
+// Atualizar lista de treinos como texto
+function updateScheduleList() {
+    try {
+        let schedules = getSchedules();
+        const trainingsDiv = document.getElementById('trainings');
+        let textContent = '';
+
+        console.log('Atualizando lista de treinos:', schedules);
+        showDebugMessage('Atualizando lista de treinos');
+
+        for (const date in schedules) {
+            if (Array.isArray(schedules[date])) {
+                schedules[date].forEach(schedule => {
+                    textContent += `Aluno: ${schedule.name}\n`;
+                    textContent += `Faixa/Grau: ${schedule.graduation}\n`;
+                    textContent += `Data: ${schedule.date}\n`;
+                    textContent += `Horário: ${schedule.time}\n`;
+                    textContent += `Tipo: ${schedule.type}\n`;
+                    textContent += '------------------------\n';
+                });
+            } else {
+                console.warn(`Ignorando chave ${date}: não é um array`);
+                showDebugMessage(`Ignorando chave ${date}: não é um array`);
+            }
+        }
+
+        trainingsDiv.textContent = textContent || 'Nenhum treino registrado.';
+    } catch (error) {
+        console.error('Erro em updateScheduleList:', error);
+        showDebugMessage('Erro ao carregar treinos: ' + error.message);
+        document.getElementById('trainings').textContent = 'Erro ao carregar treinos: ' + error.message;
+    }
+}
+
+// Atualizar contagem mensal
+function updateMonthlyCount(year, month) {
+    try {
+        let schedules = getSchedules();
+        let count = 0;
+        for (const date in schedules) {
+            if (date.startsWith(`${year}-${month.toString().padStart(2, '0')}`) && Array.isArray(schedules[date])) {
+                count += schedules[date].length;
+            }
+        }
+        document.getElementById('monthly-count').textContent = `Dias Treinados no Mês: ${count}`;
+        console.log('Contagem mensal atualizada:', count);
+    } catch (error) {
+        console.error('Erro em updateMonthlyCount:', error);
+        showDebugMessage('Erro ao contar treinos: ' + error.message);
+    }
+}
+
+// Inicializar
+updateScheduleList();
